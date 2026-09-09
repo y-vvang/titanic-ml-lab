@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/google-all-fonts.css" rel="stylesheet"/>
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* === 品牌色 === */
+      --color-primary:              #7C5CFF;
+      --color-primary-container:    #2A1F66;
+      --color-on-primary:           #ffffff;
+      /* === 背景 / 表面 === */
+      --color-background:                 #070A14;
+      --color-surface-container-lowest:   #0C1020;
+      --color-surface:                    #111631;
+      --color-surface-container:          #181D3A;
+      --color-surface-container-high:     #1F2548;
+      --color-surface-container-highest:  #282E58;
+      /* === 文字 === */
+      --color-on-surface:           #F7FAFF;
+      --color-on-surface-variant:   #9AA7C7;
+      /* === 功能色 === */
+      --color-success:  #62FAD3;
+      --color-error:    #FF6B6B;
+      --color-warning:  #FFD166;
+      --color-accent:   #69E7FF;
+      /* === 边框 === */
+      --color-outline:          rgba(255,255,255,0.12);
+      --color-outline-variant:  rgba(255,255,255,0.06);
+      /* === 圆角 === */
+      --radius-sm:   0.5rem;
+      --radius-md:   0.75rem;
+      --radius-lg:   1rem;
+      --radius-xl:   1.25rem;
+      --radius-2xl:  1.5rem;
+      --radius-full: 9999px;
+      /* === 阴影 === */
+      --shadow-card:   0 2px 8px rgba(0,0,0,0.3);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.4);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.5);
+      /* === 字体 === */
+      --font-sans: "Inter", "Manrope", system-ui, sans-serif;
+    }
+  </style>
+
+  <style>
+    /* 毛玻璃效果 */
+    .glass {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .glass-strong {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    /* 发光效果 */
+    .glow-primary {
+      box-shadow: 0 0 20px rgba(124,92,255,0.2);
+    }
+    .glow-accent {
+      box-shadow: 0 0 20px rgba(105,231,255,0.2);
+    }
+    /* 渐变 CTA 按钮 */
+    .btn-gradient {
+      background: linear-gradient(135deg, #7C5CFF, #69E7FF);
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .btn-gradient:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    /* 步骤进度条活跃态 */
+    .step-active {
+      color: #7C5CFF;
+      border-bottom: 2px solid #7C5CFF;
+    }
+    .step-done {
+      color: #62FAD3;
+    }
+    .step-pending {
+      color: #9AA7C7;
+    }
+    /* 仪表盘样式 */
+    .gauge-container {
+      position: relative;
+      width: 260px;
+      height: 145px;
+      overflow: visible;
+    }
+    .gauge-bg {
+      fill: none;
+      stroke: rgba(255,255,255,0.08);
+      stroke-width: 18;
+      stroke-linecap: round;
+    }
+    .gauge-fill {
+      fill: none;
+      stroke-width: 18;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s ease-out, stroke 0.5s ease;
+    }
+    .gauge-needle {
+      transition: transform 1s ease-out;
+      transform-origin: 130px 130px;
+    }
+    .gauge-center-dot {
+      fill: #69E7FF;
+      filter: drop-shadow(0 0 6px rgba(105,231,255,0.6));
+    }
+    /* 单选按钮组样式 */
+    .radio-group .radio-option {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .radio-group .radio-option input[type="radio"] {
+      display: none;
+    }
+    .radio-group .radio-option .radio-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.875rem;
+      color: #9AA7C7;
+      transition: all 0.2s;
+    }
+    .radio-group .radio-option input[type="radio"]:checked + .radio-label {
+      background: rgba(124,92,255,0.15);
+      border-color: rgba(124,92,255,0.4);
+      color: #7C5CFF;
+    }
+    .radio-group .radio-option .radio-label .radio-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+      position: relative;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .radio-group .radio-option input[type="radio"]:checked + .radio-label .radio-dot {
+      border-color: #7C5CFF;
+    }
+    .radio-group .radio-option input[type="radio"]:checked + .radio-label .radio-dot::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #7C5CFF;
+    }
+    /* 影响因素标签 */
+    .factor-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .factor-positive {
+      background: rgba(98,250,211,0.12);
+      color: #62FAD3;
+      border: 1px solid rgba(98,250,211,0.2);
+    }
+  </style>
+
+  <!-- 图片兜底 -->
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23111631"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%239AA7C7" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans min-h-screen">
+
+  <!-- @nav:start 导航组件，不需要的页面则不要复制此段 -->
+  <header class="glass-strong sticky top-0 z-40 h-16 flex items-center justify-between px-6">
+    <div class="flex items-center gap-3">
+      <i data-lucide="brain" class="text-primary w-6 h-6"></i>
+      <span class="font-bold text-lg text-on-surface">Titanic ML Lab</span>
+    </div>
+    <nav class="flex items-center gap-1">
+      <a href="home.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">首页</a>
+      <a href="explore.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">数据探索</a>
+      <a href="clean.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">数据清洗</a>
+      <a href="train.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">模型训练</a>
+      <a href="evaluate.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">模型评估</a>
+      <a href="predict.html" class="px-3 py-1.5 text-sm font-medium text-primary bg-primary/15 rounded-md" aria-current="page">自定义预测</a>
+    </nav>
+  </header>
+
+  <!-- 步骤进度条 -->
+  <div class="glass border-t border-outline-variant/20 flex items-center justify-center gap-8 px-6 py-2">
+    <div class="flex items-center gap-2 step-done">
+      <div class="w-6 h-6 rounded-full bg-success/20 text-success flex items-center justify-center text-xs font-bold">1</div>
+      <span class="text-xs font-medium">数据探索</span>
+    </div>
+    <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-on-surface-variant/50"></i>
+    <div class="flex items-center gap-2 step-done">
+      <div class="w-6 h-6 rounded-full bg-success/20 text-success flex items-center justify-center text-xs font-bold">2</div>
+      <span class="text-xs font-medium">数据清洗</span>
+    </div>
+    <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-on-surface-variant/50"></i>
+    <div class="flex items-center gap-2 step-done">
+      <div class="w-6 h-6 rounded-full bg-success/20 text-success flex items-center justify-center text-xs font-bold">3</div>
+      <span class="text-xs font-medium">模型训练</span>
+    </div>
+    <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-on-surface-variant/50"></i>
+    <div class="flex items-center gap-2 step-done">
+      <div class="w-6 h-6 rounded-full bg-success/20 text-success flex items-center justify-center text-xs font-bold">4</div>
+      <span class="text-xs font-medium">模型评估</span>
+    </div>
+    <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-on-surface-variant/50"></i>
+    <div class="flex items-center gap-2 step-active">
+      <div class="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">5</div>
+      <span class="text-xs font-medium">自定义预测</span>
+    </div>
+  </div>
+  <!-- @nav:end 导航组件，不需要的页面则不要复制此段 -->
+
+  <main class="max-w-7xl mx-auto w-full">
+    <!-- @main-content:start -->
+    <div class="p-6">
+
+      <!-- 页面标题区 -->
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-on-surface">自定义预测</h1>
+        <p class="text-sm text-on-surface-variant mt-1">输入乘客信息，实时预测生还概率。体验机器学习模型的推理能力。</p>
+      </div>
+
+      <!-- 主体两栏布局 -->
+      <div class="flex gap-6 items-start">
+
+        <!-- 左侧：输入表单 -->
+        <div class="w-[440px] shrink-0 glass rounded-xl p-6">
+          <div class="flex items-center gap-2 mb-6">
+            <i data-lucide="user-round" class="w-5 h-5 text-accent"></i>
+            <h2 class="text-base font-semibold text-on-surface">乘客信息</h2>
+          </div>
+
+          <form id="predict-form" class="space-y-5" onsubmit="return false;">
+
+            <!-- Pclass -->
+            <div>
+              <label for="input-pclass" class="block text-sm font-medium text-on-surface mb-1.5">船舱等级 (Pclass)</label>
+              <select id="input-pclass" class="w-full bg-surface-container border-none rounded-md px-3 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors appearance-none cursor-pointer">
+                <option value="1">1 等舱 — 上层甲板</option>
+                <option value="2">2 等舱 — 中层甲板</option>
+                <option value="3" selected>3 等舱 — 下层甲板</option>
+              </select>
+            </div>
+
+            <!-- Sex -->
+            <div>
+              <label class="block text-sm font-medium text-on-surface mb-1.5">性别 (Sex)</label>
+              <div class="radio-group flex gap-3">
+                <label class="radio-option">
+                  <input type="radio" name="sex" value="male" checked>
+                  <span class="radio-label">
+                    <span class="radio-dot"></span>
+                    <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                    男性
+                  </span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="sex" value="female">
+                  <span class="radio-label">
+                    <span class="radio-dot"></span>
+                    <i data-lucide="user-round" class="w-3.5 h-3.5"></i>
+                    女性
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Age -->
+            <div>
+              <label for="input-age" class="block text-sm font-medium text-on-surface mb-1.5">年龄 (Age)</label>
+              <div class="relative">
+                <input id="input-age" type="number" min="0" max="100" value="25" class="w-full bg-surface-container border-none rounded-md px-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors pr-10" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant">岁</span>
+              </div>
+            </div>
+
+            <!-- SibSp -->
+            <div>
+              <label for="input-sibsp" class="block text-sm font-medium text-on-surface mb-1.5">同船兄弟姐妹/配偶数量 (SibSp)</label>
+              <input id="input-sibsp" type="number" min="0" max="8" value="0" class="w-full bg-surface-container border-none rounded-md px-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+            </div>
+
+            <!-- Parch -->
+            <div>
+              <label for="input-parch" class="block text-sm font-medium text-on-surface mb-1.5">同船父母/子女数量 (Parch)</label>
+              <input id="input-parch" type="number" min="0" max="6" value="0" class="w-full bg-surface-container border-none rounded-md px-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+            </div>
+
+            <!-- Fare -->
+            <div>
+              <label for="input-fare" class="block text-sm font-medium text-on-surface mb-1.5">票价 (Fare)</label>
+              <div class="relative">
+                <input id="input-fare" type="number" min="0" max="600" value="7.25" step="0.01" class="w-full bg-surface-container border-none rounded-md px-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors pr-14" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant">英镑</span>
+              </div>
+            </div>
+
+            <!-- Embarked -->
+            <div>
+              <label for="input-embarked" class="block text-sm font-medium text-on-surface mb-1.5">登船港口 (Embarked)</label>
+              <select id="input-embarked" class="w-full bg-surface-container border-none rounded-md px-3 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors appearance-none cursor-pointer">
+                <option value="S" selected>S — 南安普顿 (Southampton)</option>
+                <option value="C">C — 瑟堡 (Cherbourg)</option>
+                <option value="Q">Q — 皇后镇 (Queenstown)</option>
+              </select>
+            </div>
+
+            <!-- 按钮组 -->
+            <div class="flex gap-3 pt-2">
+              <button id="btn-predict" type="button" class="btn-gradient flex-1 px-4 py-2.5 rounded-lg text-sm inline-flex items-center justify-center gap-2">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                预测生还概率
+              </button>
+              <button id="btn-reset" type="button" class="px-4 py-2.5 rounded-lg text-sm font-medium text-on-surface-variant border border-outline-variant/20 hover:bg-surface-container/50 active:scale-[0.98] transition-all">
+                重置
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 右侧：结果展示区 -->
+        <div class="flex-1 min-w-0 space-y-6">
+
+          <!-- 生还概率仪表盘 -->
+          <div id="result-card" class="glass rounded-xl p-6 flex flex-col items-center">
+            <div class="flex items-center gap-2 mb-4 self-start">
+              <i data-lucide="gauge" class="w-5 h-5 text-accent"></i>
+              <h2 class="text-base font-semibold text-on-surface">预测结果</h2>
+            </div>
+
+            <!-- 仪表盘 SVG -->
+            <div class="gauge-container mb-2">
+              <svg viewBox="0 0 260 145" width="260" height="145">
+                <defs>
+                  <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#FF6B6B" />
+                    <stop offset="35%" stop-color="#FFD166" />
+                    <stop offset="65%" stop-color="#7C5CFF" />
+                    <stop offset="100%" stop-color="#62FAD3" />
+                  </linearGradient>
+                  <filter id="glowFilter">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                <!-- 背景弧 -->
+                <path d="M 22 130 A 108 108 0 0 1 238 130" class="gauge-bg" />
+                <!-- 填充弧 -->
+                <path id="gauge-arc" d="M 22 130 A 108 108 0 0 1 238 130" class="gauge-fill" stroke="url(#gaugeGradient)" stroke-dasharray="339.29" stroke-dashoffset="91.61" filter="url(#glowFilter)" />
+                <!-- 刻度标签 -->
+                <text x="14" y="144" fill="#9AA7C7" font-size="10" font-family="Inter, system-ui, sans-serif">0%</text>
+                <text x="119" y="18" fill="#9AA7C7" font-size="10" font-family="Inter, system-ui, sans-serif" text-anchor="middle">50%</text>
+                <text x="236" y="144" fill="#9AA7C7" font-size="10" font-family="Inter, system-ui, sans-serif" text-anchor="end">100%</text>
+                <!-- 指针 -->
+                <g id="gauge-needle" class="gauge-needle" style="transform: rotate(43.2deg)">
+                  <line x1="130" y1="130" x2="130" y2="38" stroke="#69E7FF" stroke-width="2.5" stroke-linecap="round" filter="url(#glowFilter)" />
+                </g>
+                <!-- 中心圆点 -->
+                <circle cx="130" cy="130" r="6" class="gauge-center-dot" />
+              </svg>
+            </div>
+
+            <!-- 大字概率值 -->
+            <div class="flex items-baseline gap-1 mb-3">
+              <span id="result-value" class="text-5xl font-bold text-accent" style="text-shadow: 0 0 20px rgba(105,231,255,0.4);">73</span>
+              <span class="text-2xl font-semibold text-accent/70">%</span>
+            </div>
+
+            <!-- 结果标签 -->
+            <div id="result-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-success/15 text-success mb-4">
+              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+              <span id="result-badge-text">生还概率较高</span>
+            </div>
+
+            <!-- 解读文案 -->
+            <p id="result-description" class="text-sm text-on-surface-variant text-center leading-relaxed max-w-md">
+              基于当前模型，此类乘客的生还概率较高。女性和高等舱位乘客有更高的生还机会。
+            </p>
+          </div>
+
+          <!-- 影响因素 -->
+          <div class="glass rounded-xl p-6">
+            <div class="flex items-center gap-2 mb-4">
+              <i data-lucide="lightbulb" class="w-5 h-5 text-warning"></i>
+              <h2 class="text-base font-semibold text-on-surface">关键影响因素</h2>
+            </div>
+            <div id="factor-tags" class="flex flex-wrap gap-2">
+              <!-- 影响因素-女性 -->
+              <span class="factor-tag factor-positive">
+                <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+                女性 +15%
+              </span>
+              <!-- 影响因素-1等舱 -->
+              <span class="factor-tag factor-positive">
+                <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+                1 等舱 +10%
+              </span>
+              <!-- 影响因素-年龄25 -->
+              <span class="factor-tag factor-positive">
+                <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+                年龄 25 岁 +5%
+              </span>
+            </div>
+            <p class="text-xs text-on-surface-variant/60 mt-3">以上因素基于随机森林特征重要性分析，展示对预测结果影响最大的 3 个特征。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部提示 -->
+      <div class="mt-8 flex items-center justify-center gap-3 py-4">
+        <i data-lucide="info" class="w-4 h-4 text-on-surface-variant/60"></i>
+        <p class="text-sm text-on-surface-variant/60">
+          你可以修改参数重新预测，或
+          <a href="train.html" class="text-primary hover:underline font-medium">返回调整模型</a>
+        </p>
+      </div>
+
+    </div>
+    <!-- @main-content:end -->
+  </main>
+
+  <script>
+    $(function () {
+      // === 仪表盘参数 ===
+      var GAUGE_RADIUS = 108;
+      var GAUGE_CX = 130;
+      var GAUGE_CY = 130;
+      var HALF_CIRCUMFERENCE = Math.PI * GAUGE_RADIUS; // ≈339.29
+
+      // 根据概率值更新仪表盘
+      function updateGauge(percent) {
+        percent = Math.max(0, Math.min(100, percent));
+        var offset = HALF_CIRCUMFERENCE * (1 - percent / 100);
+        $('#gauge-arc').css('stroke-dashoffset', offset);
+
+        // 指针角度：0% → -90°, 100% → 90°
+        var angle = -90 + (percent / 100) * 180;
+        $('#gauge-needle').css('transform', 'rotate(' + angle + 'deg)');
+
+        // 更新数值
+        $('#result-value').text(Math.round(percent));
+
+        // 更新结果标签和样式
+        if (percent >= 70) {
+          $('#result-badge').removeClass('bg-error/15 text-error bg-warning/15 text-warning bg-success/15 text-success').addClass('bg-success/15 text-success');
+          $('#result-badge-text').text('生还概率较高');
+        } else if (percent >= 40) {
+          $('#result-badge').removeClass('bg-error/15 text-error bg-success/15 text-success bg-warning/15 text-warning').addClass('bg-warning/15 text-warning');
+          $('#result-badge-text').text('生还概率中等');
+        } else {
+          $('#result-badge').removeClass('bg-success/15 text-success bg-warning/15 text-warning bg-error/15 text-error').addClass('bg-error/15 text-error');
+          $('#result-badge-text').text('生还概率较低');
+        }
+
+        // 更新解读文案
+        if (percent >= 70) {
+          $('#result-description').text('基于当前模型，此类乘客的生还概率较高。女性和高等舱位乘客有更高的生还机会。');
+        } else if (percent >= 40) {
+          $('#result-description').text('基于当前模型，此类乘客的生还概率中等。舱位等级和性别是影响生还的关键因素。');
+        } else {
+          $('#result-description').text('基于当前模型，此类乘客的生还概率较低。男性、低等舱位和高票价年龄段生还率明显偏低。');
+        }
+      }
+
+      // 更新影响因素标签
+      function updateFactors(pclass, sex, age) {
+        var factors = [];
+        // 因素-性别
+        if (sex === 'female') {
+          factors.push({ text: '女性 +15%', positive: true });
+        } else {
+          factors.push({ text: '男性 -15%', positive: false });
+        }
+        // 因素-舱位
+        if (pclass === '1') {
+          factors.push({ text: '1 等舱 +10%', positive: true });
+        } else if (pclass === '2') {
+          factors.push({ text: '2 等舱 +3%', positive: true });
+        } else {
+          factors.push({ text: '3 等舱 -10%', positive: false });
+        }
+        // 因素-年龄
+        if (age <= 12) {
+          factors.push({ text: '儿童 (≤12岁) +8%', positive: true });
+        } else if (age <= 50) {
+          factors.push({ text: '年龄 ' + age + ' 岁 +5%', positive: true });
+        } else {
+          factors.push({ text: '老年 (≥50岁) -5%', positive: false });
+        }
+
+        var html = '';
+        for (var i = 0; i < factors.length; i++) {
+          var f = factors[i];
+          var cls = f.positive ? 'factor-positive' : 'factor-negative';
+          var icon = f.positive ? 'arrow-up-right' : 'arrow-down-right';
+          // 影响因素标签-动态生成
+          html += '<span class="factor-tag ' + cls + '">';
+          html += '<i data-lucide="' + icon + '" class="w-3 h-3"></i>';
+          html += f.text;
+          html += '</span>';
+        }
+        $('#factor-tags').html(html);
+        lucide.createIcons();
+      }
+
+      // 模拟预测计算（纯前端 mock）
+      function mockPredict() {
+        var pclass = parseInt($('#input-pclass').val());
+        var sex = $('input[name="sex"]:checked').val();
+        var age = parseInt($('#input-age').val()) || 25;
+        var sibsp = parseInt($('#input-sibsp').val()) || 0;
+        var parch = parseInt($('#input-parch').val()) || 0;
+        var fare = parseFloat($('#input-fare').val()) || 7.25;
+        var embarked = $('#input-embarked').val();
+
+        // 简单 mock 公式：基础概率 + 各特征贡献
+        var prob = 38.4; // 基础存活率
+
+        // 性别影响最大
+        if (sex === 'female') prob += 30;
+        else prob -= 15;
+
+        // 舱位等级
+        if (pclass === 1) prob += 20;
+        else if (pclass === 2) prob += 5;
+        else prob -= 10;
+
+        // 年龄
+        if (age <= 12) prob += 10;
+        else if (age > 50) prob -= 5;
+
+        // 家庭规模影响
+        var familySize = sibsp + parch;
+        if (familySize >= 1 && familySize <= 3) prob += 5;
+        else if (familySize > 3) prob -= 8;
+
+        // 票价影响
+        if (fare > 50) prob += 8;
+        else if (fare > 20) prob += 3;
+
+        // 登船港口
+        if (embarked === 'C') prob += 5;
+        else if (embarked === 'Q') prob -= 2;
+
+        // 钳制到 0-100
+        prob = Math.max(3, Math.min(97, prob));
+
+        updateGauge(prob);
+        updateFactors(String(pclass), sex, age);
+      }
+
+      // 预测按钮
+      $('#btn-predict').on('click', function () {
+        // 简单表单验证
+        var age = parseInt($('#input-age').val());
+        var fare = parseFloat($('#input-fare').val());
+        var sibsp = parseInt($('#input-sibsp').val());
+        var parch = parseInt($('#input-parch').val());
+
+        if (isNaN(age) || age < 0 || age > 100) {
+          $('#input-age').focus();
+          return;
+        }
+        if (isNaN(fare) || fare < 0 || fare > 600) {
+          $('#input-fare').focus();
+          return;
+        }
+        if (isNaN(sibsp) || sibsp < 0 || sibsp > 8) {
+          $('#input-sibsp').focus();
+          return;
+        }
+        if (isNaN(parch) || parch < 0 || parch > 6) {
+          $('#input-parch').focus();
+          return;
+        }
+
+        // 模拟加载效果
+        var $btn = $(this);
+        $btn.prop('disabled', true).css('opacity', 0.7);
+        setTimeout(function () {
+          mockPredict();
+          $btn.prop('disabled', false).css('opacity', 1);
+        }, 600);
+      });
+
+      // 重置按钮
+      $('#btn-reset').on('click', function () {
+        $('#input-pclass').val('3');
+        $('input[name="sex"][value="male"]').prop('checked', true);
+        // 触发 radio 变更以更新视觉状态
+        $('input[name="sex"]').trigger('change');
+        $('#input-age').val(25);
+        $('#input-sibsp').val(0);
+        $('#input-parch').val(0);
+        $('#input-fare').val('7.25');
+        $('#input-embarked').val('S');
+        // 重置仪表盘到初始值
+        updateGauge(73);
+        updateFactors('3', 'male', 25);
+      });
+
+      // radio 变更时更新视觉状态
+      $('input[name="sex"]').on('change', function () {
+        // CSS :checked 伪类会自动处理样式
+      });
+
+      // 添加负面因素样式
+      $('<style>.factor-negative{background:rgba(255,107,107,0.12);color:#FF6B6B;border:1px solid rgba(255,107,107,0.2)}</style>').appendTo('head');
+
+      // 初始化仪表盘显示
+      updateGauge(73);
+    });
+  </script>
+
+  <script>lucide.createIcons();</script>
+</body>
+
+</html>

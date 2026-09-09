@@ -1,0 +1,6 @@
+# Vercel Python Serverless Functions 依赖（api/py/**）
+# 构建时由 Vercel 自动安装，运行时不可 pip install —— 新增依赖只能加在这里
+# 版本与本地开发环境对齐，保证训练结果一致（random_state 固定 42 时结果依赖库版本）
+scikit-learn==1.9.0
+pandas==3.0.5
+numpy==1.26.4

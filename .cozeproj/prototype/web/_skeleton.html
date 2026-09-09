@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* === 品牌色 === */
+      --color-primary:              #7C5CFF;
+      --color-primary-container:    #2A1F66;
+      --color-on-primary:           #ffffff;
+      /* === 背景 / 表面 === */
+      --color-background:                 #070A14;
+      --color-surface-container-lowest:   #0C1020;
+      --color-surface:                    #111631;
+      --color-surface-container:          #181D3A;
+      --color-surface-container-high:     #1F2548;
+      --color-surface-container-highest:  #282E58;
+      /* === 文字 === */
+      --color-on-surface:           #F7FAFF;
+      --color-on-surface-variant:   #9AA7C7;
+      /* === 功能色 === */
+      --color-success:  #62FAD3;
+      --color-error:    #FF6B6B;
+      --color-warning:  #FFD166;
+      --color-accent:   #69E7FF;
+      /* === 边框 === */
+      --color-outline:          rgba(255,255,255,0.12);
+      --color-outline-variant:  rgba(255,255,255,0.08);
+      /* === 圆角 === */
+      --radius-sm:   0.25rem;
+      --radius-md:   0.5rem;
+      --radius-lg:   0.75rem;
+      --radius-xl:   1rem;
+      --radius-2xl:  1.25rem;
+      --radius-full: 9999px;
+      /* === 阴影 === */
+      --shadow-card:   0 2px 8px rgba(0,0,0,0.3);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.4);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.5);
+      /* === 字体 === */
+      --font-sans: "Inter", "Manrope", system-ui, sans-serif;
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .glass-card {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0.75rem;
+    }
+
+    .glass-strong {
+      background: rgb(25,25,25);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .btn-gradient {
+      background: linear-gradient(135deg, #7C5CFF, #69E7FF);
+      color: #fff;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%239ca3af" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans">
+
+  <!-- @nav:start 导航组件 -->
+  <header class="glass-strong sticky top-0 z-40 h-10 flex items-center justify-between px-4">
+    <a href="home.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+      <i data-lucide="brain" class="text-primary w-5 h-5"></i>
+      <span class="font-bold text-base text-on-surface">Titanic ML Lab</span>
+    </a>
+    <nav class="flex items-center gap-1">
+      <a href="home.html" class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
+        首页
+      </a>
+      <a href="versions.html" class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-primary bg-primary/15" aria-current="page">
+        版本管理
+      </a>
+      <a href="https://www.kaggle.com/competitions/titanic" target="_blank" class="px-3 py-1.5 rounded-md transition-colors hover:bg-surface-container">
+        <i data-lucide="external-link" class="w-4 h-4 text-on-surface-variant"></i>
+      </a>
+    </nav>
+  </header>
+  <!-- @nav:end 导航组件 -->
+
+  <!-- @main-content:start -->
+  <main class="max-w-5xl mx-auto p-5">
+    <!-- Page content will be filled by sub-agent -->
+  </main>
+  <!-- @main-content:end -->
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

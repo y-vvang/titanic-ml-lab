@@ -1,0 +1,12 @@
+{
+  "elements": [
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/train.html"
+      },
+      "title": "模型训练",
+      "size": "web"
+    }
+  ]
+}

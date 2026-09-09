@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* === 品牌色 === */
+      --color-primary:              #7C5CFF;
+      --color-primary-container:    #2A1F66;
+      --color-on-primary:           #ffffff;
+      /* === 背景 / 表面 === */
+      --color-background:                 #070A14;
+      --color-surface-container-lowest:   #0C1020;
+      --color-surface:                    #111631;
+      --color-surface-container:          #181D3A;
+      --color-surface-container-high:     #1F2548;
+      --color-surface-container-highest:  #282E58;
+      /* === 文字 === */
+      --color-on-surface:           #F7FAFF;
+      --color-on-surface-variant:   #9AA7C7;
+      /* === 功能色 === */
+      --color-success:  #62FAD3;
+      --color-error:    #FF6B6B;
+      --color-warning:  #FFD166;
+      --color-accent:   #69E7FF;
+      /* === 边框 === */
+      --color-outline:          rgba(255,255,255,0.12);
+      --color-outline-variant:  rgba(255,255,255,0.08);
+      /* === 圆角 === */
+      --radius-sm:   0.25rem;
+      --radius-md:   0.5rem;
+      --radius-lg:   0.75rem;
+      --radius-xl:   1rem;
+      --radius-2xl:  1.25rem;
+      --radius-full: 9999px;
+      /* === 阴影 === */
+      --shadow-card:   0 2px 8px rgba(0,0,0,0.3);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.4);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.5);
+      /* === 字体 === */
+      --font-sans: "Inter", "Manrope", system-ui, sans-serif;
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .glass-card {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0.75rem;
+    }
+
+    .glass-strong {
+      background: rgb(25,25,25);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .btn-gradient {
+      background: linear-gradient(135deg, #7C5CFF, #69E7FF);
+      color: #fff;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%239ca3af" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans">
+
+  <!-- @nav:start 导航组件 -->
+  <header class="glass-strong sticky top-0 z-40 h-10 flex items-center justify-between px-4">
+    <a href="home.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+      <i data-lucide="brain" class="text-primary w-5 h-5"></i>
+      <span class="font-bold text-base text-on-surface">Titanic ML Lab</span>
+    </a>
+    <nav class="flex items-center gap-1">
+      <a href="home.html" class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
+        首页
+      </a>
+      <a href="versions.html" class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-primary bg-primary/15" aria-current="page">
+        版本管理
+      </a>
+      <a href="https://www.kaggle.com/competitions/titanic" target="_blank" class="px-3 py-1.5 rounded-md transition-colors hover:bg-surface-container">
+        <i data-lucide="external-link" class="w-4 h-4 text-on-surface-variant"></i>
+      </a>
+    </nav>
+  </header>
+  <!-- @nav:end 导航组件 -->
+
+  <!-- @main-content:start -->
+  <main class="max-w-5xl mx-auto p-5">
+
+    <!-- 页面标题 + 导入按钮 -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-on-surface">版本管理</h1>
+      <button id="btn-import" class="bg-primary text-on-primary px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all inline-flex items-center gap-2">
+        <i data-lucide="upload" class="w-3.5 h-3.5"></i>导入
+      </button>
+    </div>
+
+    <!-- 版本卡片列表 -->
+    <div id="version-list" class="space-y-4">
+
+      <!-- 列表-版本1：决策树 v1.0 -->
+      <div class="version-card bg-surface rounded-lg shadow-card p-5" data-version-id="v1">
+        <div class="flex items-start justify-between gap-4">
+          <!-- 左侧：名称 + 类型 + 时间 -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3 mb-2">
+              <h2 id="version-name-v1" class="text-base font-semibold text-on-surface cursor-pointer hover:text-primary transition-colors" title="点击编辑名称">决策树 v1.0</h2>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-accent/15 text-accent">决策树</span>
+            </div>
+            <p class="text-xs text-on-surface-variant mb-3">2025-05-14 12:30</p>
+            <!-- 4个核心指标预览 -->
+            <div class="grid grid-cols-4 gap-3">
+              <div class="bg-surface-container rounded-md px-3 py-2">
+                <div class="text-xs text-on-surface-variant mb-0.5">准确率</div>
+                <div class="text-sm font-semibold text-success">82.1%</div>
+              </div>
+              <div class="bg-surface-container rounded-md px-3 py-2">
+                <div class="text-xs text-on-surface-variant mb-0.5">精确率</div>
+                <div class="text-sm font-semibold text-accent">78.5%</div>
+              </div>
+              <div class="bg-surface-container rounded-md px-3 py-2">
+                <div class="text-xs text-on-surface-variant mb-0.5">召回率</div>
+                <div class="text-sm font-semibold text-warning">73.2%</div>
+              </div>
+              <div class="bg-surface-container rounded-md px-3 py-2">
+                <div class="text-xs text-on-surface-variant mb-0.5">F1</div>
+                <div class="text-sm font-semibold text-primary">75.8%</div>
+              </div>
+            </div>
+          </div>
+          <!-- 右侧：操作按钮 -->
+          <div class="flex items-center gap-2 shrink-0">
+            <button id="btn-detail-v1" class="p-2 rounded-md bg-surface-container hover:bg-surface-container-high transition-colors" title="查看详情" data-version-id="v1">
+              <i data-lucide="eye" class="w-4 h-4 text-on-surface-variant"></i>
+            </button>
+            <button id="btn-export-v1" class="p-2 rounded-md bg-surface-container hover:bg-surface-container-high transition-colors" title="导出" data-version-id="v1">
+              <i data-lucide="download" class="w-4 h-4 text-on-surface-variant"></i>
+            </button>
+            <button id="btn-delete-v1" class="p-2 rounded-md bg-surface-container hover:bg-error/20 transition-colors group" title="删除" data-version-id="v1">
+              <i data-lucide="trash-2" class="w-4 h-4 text-on-surface-variant group-hover:text-error"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 列表-版本2：随机森林 v2.0 -->
+      <div class="version-card bg-surface rounded-lg shadow-card p-5" data-version-id="v2">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3 mb-2">
+              <h2 id="version-name-v2" class="text-base font-semibold text-on-surface cursor-pointer hover:text-primary transition-colors" title="点击编辑名称">随机森林 v2.0</h2>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-success/15 text-success">随机森林</span>
+            </div>
+            <p class="text-xs text-on-surface-variant mb-3">2025-05-16 09:15</p>
+            <div class="grid grid-cols-4 gap-3">
+              <div class="bg-surface-container rounded-md px-3 py-2">
+                <div class="text-xs text-on-surface-variant mb-0.5">准确率</div>
+                <div class="text-sm font-semibold text-success">86.4%</div>
+              </div>
+              <div class="bg-surface-container rounded-md px-3 py-2">
+                <div class="text-xs text-on-surface-variant mb-0.5">精确率</div>
+                <div class="text-sm font-semibold text-accent">83.7%</div>
+              </div>
+              <div class="bg-surface-container rounded-md px-3 py-2">
+                <div class="text-xs text-on-surface-variant mb-0.5">召回率</div>
+                <div class="text-sm font-semibold text-warning">79.1%</div>
+              </div>
+              <div class="bg-surface-container rounded-md px-3 py-2">
+                <div class="text-xs text-on-surface-variant mb-0.5">F1</div>
+                <div class="text-sm font-semibold text-primary">81.3%</div>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button id="btn-detail-v2" class="p-2 rounded-md bg-surface-container hover:bg-surface-container-high transition-colors" title="查看详情" data-version-id="v2">
+              <i data-lucide="eye" class="w-4 h-4 text-on-surface-variant"></i>
+            </button>
+            <button id="btn-export-v2" class="p-2 rounded-md bg-surface-container hover:bg-surface-container-high transition-colors" title="导出" data-version-id="v2">
+              <i data-lucide="download" class="w-4 h-4 text-on-surface-variant"></i>
+            </button>
+            <button id="btn-delete-v2" class="p-2 rounded-md bg-surface-container hover:bg-error/20 transition-colors group" title="删除" data-version-id="v2">
+              <i data-lucide="trash-2" class="w-4 h-4 text-on-surface-variant group-hover:text-error"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 列表-版本3：逻辑回归 v1.1 -->
+      <div class="version-card bg-surface rounded-lg shadow-card p-5" data-version-id="v3">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3 mb-2">
+              <h2 id="version-name-v3" class="text-base font-semibold text-on-surface cursor-pointer hover:text-primary transition-colors" title="点击编辑名称">逻辑回归 v1.1</h2>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/15 text-primary">逻辑回归</span>
+            </div>
+            <p class="text-xs text-on-surface-variant mb-3">2025-05-18 15:42</p>
+            <div class="grid grid-cols-4 gap-3">
+              <div class="bg-surface-container rounded-md px-3 py-2">
+                <div class="text-xs text-on-surface-variant mb-0.5">准确率</div>
+                <div class="text-sm font-semibold text-success">79.3%</div>
+              </div>
+              <div class="bg-surface-container rounded-md px-3 py-2">
+                <div class="text-xs text-on-surface-variant mb-0.5">精确率</div>
+                <div class="text-sm font-semibold text-accent">75.8%</div>
+              </div>
+              <div class="bg-surface-container rounded-md px-3 py-2">
+                <div class="text-xs text-on-surface-variant mb-0.5">召回率</div>
+                <div class="text-sm font-semibold text-warning">70.6%</div>
+              </div>
+              <div class="bg-surface-container rounded-md px-3 py-2">
+                <div class="text-xs text-on-surface-variant mb-0.5">F1</div>
+                <div class="text-sm font-semibold text-primary">73.1%</div>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button id="btn-detail-v3" class="p-2 rounded-md bg-surface-container hover:bg-surface-container-high transition-colors" title="查看详情" data-version-id="v3">
+              <i data-lucide="eye" class="w-4 h-4 text-on-surface-variant"></i>
+            </button>
+            <button id="btn-export-v3" class="p-2 rounded-md bg-surface-container hover:bg-surface-container-high transition-colors" title="导出" data-version-id="v3">
+              <i data-lucide="download" class="w-4 h-4 text-on-surface-variant"></i>
+            </button>
+            <button id="btn-delete-v3" class="p-2 rounded-md bg-surface-container hover:bg-error/20 transition-colors group" title="删除" data-version-id="v3">
+              <i data-lucide="trash-2" class="w-4 h-4 text-on-surface-variant group-hover:text-error"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+  <!-- @main-content:end -->
+
+  <!-- 版本详情弹窗 (v1 决策树默认打开) -->
+  <div id="dialog-detail" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+    <div id="dialog-detail-content" class="bg-surface rounded-xl shadow-dialog max-w-lg w-full max-h-[85vh] overflow-y-auto p-6">
+      <!-- 弹窗头部 -->
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-3">
+          <h3 id="dialog-detail-title" class="text-lg font-bold text-on-surface">决策树 v1.0</h3>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-accent/15 text-accent">决策树</span>
+        </div>
+        <button id="btn-close-detail" class="p-1.5 rounded-md hover:bg-surface-container transition-colors">
+          <i data-lucide="x" class="w-4 h-4 text-on-surface-variant"></i>
+        </button>
+      </div>
+
+      <p id="dialog-detail-time" class="text-xs text-on-surface-variant mb-5">创建时间：2025-05-14 12:30</p>
+
+      <!-- 分区1：数据清洗配置 -->
+      <div class="mb-5">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="filter" class="w-4 h-4 text-primary"></i>
+          <h4 class="text-sm font-semibold text-on-surface">数据清洗配置</h4>
+        </div>
+        <div class="bg-surface-container rounded-lg p-4 space-y-2.5">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-on-surface-variant">Age 缺失值策略</span>
+            <span class="text-sm font-medium text-on-surface">中位数填充</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-on-surface-variant">Embarked 缺失值策略</span>
+            <span class="text-sm font-medium text-on-surface">众数填充</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-on-surface-variant">Cabin 缺失值策略</span>
+            <span class="text-sm font-medium text-on-surface">提取甲板层</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-on-surface-variant">姓名处理策略</span>
+            <span class="text-sm font-medium text-on-surface">提取头衔</span>
+          </div>
+          <div class="pt-1">
+            <span class="text-sm text-on-surface-variant block mb-1.5">选中特征</span>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs bg-primary/10 text-primary">Pclass</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs bg-primary/10 text-primary">Sex</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs bg-primary/10 text-primary">Age</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs bg-primary/10 text-primary">Fare</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs bg-primary/10 text-primary">Embarked</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs bg-primary/10 text-primary">Title</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs bg-primary/10 text-primary">Deck</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs bg-primary/10 text-primary">FamilySize</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分区2：训练超参数 -->
+      <div class="mb-5">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="settings" class="w-4 h-4 text-primary"></i>
+          <h4 class="text-sm font-semibold text-on-surface">训练超参数</h4>
+        </div>
+        <div class="bg-surface-container rounded-lg p-4 space-y-2.5">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-on-surface-variant">最大深度 (maxDepth)</span>
+            <span class="text-sm font-medium text-on-surface">5</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-on-surface-variant">最小分裂样本数 (minSamplesSplit)</span>
+            <span class="text-sm font-medium text-on-surface">2</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-on-surface-variant">叶节点最少样本数 (minSamplesLeaf)</span>
+            <span class="text-sm font-medium text-on-surface">1</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-on-surface-variant">分裂标准 (criterion)</span>
+            <span class="text-sm font-medium text-on-surface">gini</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-on-surface-variant">测试集比例</span>
+            <span class="text-sm font-medium text-on-surface">30%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分区3：训练结果摘要 -->
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="bar-chart-3" class="w-4 h-4 text-primary"></i>
+          <h4 class="text-sm font-semibold text-on-surface">训练结果摘要</h4>
+        </div>
+        <div class="bg-surface-container rounded-lg p-4">
+          <!-- 4个指标 -->
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-surface-container-high rounded-md px-3 py-2.5">
+              <div class="text-xs text-on-surface-variant mb-0.5">准确率</div>
+              <div class="text-base font-bold text-success">82.1%</div>
+            </div>
+            <div class="bg-surface-container-high rounded-md px-3 py-2.5">
+              <div class="text-xs text-on-surface-variant mb-0.5">精确率</div>
+              <div class="text-base font-bold text-accent">78.5%</div>
+            </div>
+            <div class="bg-surface-container-high rounded-md px-3 py-2.5">
+              <div class="text-xs text-on-surface-variant mb-0.5">召回率</div>
+              <div class="text-base font-bold text-warning">73.2%</div>
+            </div>
+            <div class="bg-surface-container-high rounded-md px-3 py-2.5">
+              <div class="text-xs text-on-surface-variant mb-0.5">F1</div>
+              <div class="text-base font-bold text-primary">75.8%</div>
+            </div>
+          </div>
+          <!-- 混淆矩阵 -->
+          <div>
+            <span class="text-sm text-on-surface-variant block mb-2">混淆矩阵</span>
+            <div class="grid grid-cols-3 gap-px bg-outline-variant/20 rounded-md overflow-hidden text-center text-sm">
+              <!-- 表头 -->
+              <div class="bg-surface-container-high p-2"></div>
+              <div class="bg-surface-container-high p-2 text-xs text-on-surface-variant font-medium">预测未生存</div>
+              <div class="bg-surface-container-high p-2 text-xs text-on-surface-variant font-medium">预测生存</div>
+              <!-- 行1 -->
+              <div class="bg-surface-container-high p-2 text-xs text-on-surface-variant font-medium">实际未生存</div>
+              <div class="bg-surface p-2.5 font-semibold text-success">TN=148</div>
+              <div class="bg-surface p-2.5 font-semibold text-error">FP=21</div>
+              <!-- 行2 -->
+              <div class="bg-surface-container-high p-2 text-xs text-on-surface-variant font-medium">实际生存</div>
+              <div class="bg-surface p-2.5 font-semibold text-error">FN=31</div>
+              <div class="bg-surface p-2.5 font-semibold text-success">TP=68</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认弹窗 -->
+  <div id="dialog-delete" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-surface rounded-xl shadow-dialog max-w-sm w-full p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-error/15 flex items-center justify-center shrink-0">
+          <i data-lucide="alert-triangle" class="w-5 h-5 text-error"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-on-surface">确认删除</h3>
+          <p id="dialog-delete-msg" class="text-sm text-on-surface-variant mt-0.5">确定要删除版本「决策树 v1.0」吗？此操作不可撤销。</p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3">
+        <button id="btn-cancel-delete" class="bg-surface-container text-on-surface px-4 py-2 rounded-md text-sm font-medium hover:bg-surface-container-high active:scale-[0.98] transition-all">取消</button>
+        <button id="btn-confirm-delete" class="bg-error text-white px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 隐藏的导入文件选择器 -->
+  <input type="file" id="file-import" accept=".json" class="hidden" />
+
+  <script>
+    $(function () {
+
+      // ========== 详情弹窗 ==========
+      // 关闭详情弹窗
+      $('#btn-close-detail').on('click', function () {
+        $('#dialog-detail').addClass('hidden');
+      });
+
+      // 点击遮罩关闭详情弹窗
+      $('#dialog-detail').on('click', function (e) {
+        if ($(e.target).is('#dialog-detail')) {
+          $('#dialog-detail').addClass('hidden');
+        }
+      });
+
+      // 点击详情按钮打开弹窗
+      // 实际项目中应根据 versionId 加载不同数据，原型中直接显示硬编码的 v1 详情
+      $('#btn-detail-v1, #btn-detail-v2, #btn-detail-v3').on('click', function () {
+        // 原型中详情内容已硬编码为 v1（决策树），直接显示弹窗
+        $('#dialog-detail').removeClass('hidden');
+      });
+
+      // ========== 删除确认弹窗 ==========
+      var deleteVersionId = null;
+      var deleteVersionName = '';
+
+      // 点击删除按钮打开确认弹窗
+      $('#btn-delete-v1, #btn-delete-v2, #btn-delete-v3').on('click', function () {
+        deleteVersionId = $(this).data('version-id');
+        deleteVersionName = $(this).closest('.version-card').find('h2').text();
+        $('#dialog-delete-msg').text('确定要删除版本「' + deleteVersionName + '」吗？此操作不可撤销。');
+        $('#dialog-delete').removeClass('hidden');
+      });
+
+      // 取消删除
+      $('#btn-cancel-delete').on('click', function () {
+        $('#dialog-delete').addClass('hidden');
+        deleteVersionId = null;
+      });
+
+      // 确认删除
+      $('#btn-confirm-delete').on('click', function () {
+        // 删除对应版本卡片
+        if (deleteVersionId) {
+          $('.version-card[data-version-id="' + deleteVersionId + '"]').remove();
+        }
+        $('#dialog-delete').addClass('hidden');
+        deleteVersionId = null;
+      });
+
+      // 点击遮罩关闭删除弹窗
+      $('#dialog-delete').on('click', function (e) {
+        if ($(e.target).is('#dialog-delete')) {
+          $('#dialog-delete').addClass('hidden');
+          deleteVersionId = null;
+        }
+      });
+
+      // ========== 版本名称内联编辑 ==========
+      // 编辑版本名称 - 点击后应实现内联编辑：
+      // 1. 将 h2 标题文字替换为 input 输入框，自动聚焦并全选当前名称
+      // 2. 按 Enter 保存修改，按 ESC 取消编辑恢复原文
+      // 3. 保存后更新 h2 的文字内容
+      $('#version-name-v1, #version-name-v2, #version-name-v3').on('click', function () {
+        var $el = $(this);
+        var currentName = $el.text();
+        console.log('编辑版本名称:', currentName);
+        // 复杂交互：内联编辑，后续应实现完整逻辑
+      });
+
+      // ========== 导出按钮 ==========
+      $('#btn-export-v1, #btn-export-v2, #btn-export-v3').on('click', function () {
+        var versionId = $(this).data('version-id');
+        console.log('导出版本:', versionId);
+        // 实际项目中应下载对应版本的 JSON 文件
+      });
+
+      // ========== 导入按钮 ==========
+      $('#btn-import').on('click', function () {
+        $('#file-import').trigger('click');
+      });
+
+      $('#file-import').on('change', function () {
+        console.log('选择了导入文件:', $(this).val());
+        // 实际项目中应读取 JSON 文件并解析为版本数据
+      });
+
+    });
+  </script>
+
+  <script>lucide.createIcons();</script>
+</body>
+
+</html>
