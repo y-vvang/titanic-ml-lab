@@ -11,6 +11,6 @@ export async function POST(request: Request) {
     return NextResponse.json(data);
   } catch (error) {
     console.error('Clean data error:', error);
-    return NextResponse.json({ error: '数据清洗失败' }, { status: 500 });
+    return NextResponse.json({ error: 'Data cleaning failed' }, { status: 500 });
   }
 }

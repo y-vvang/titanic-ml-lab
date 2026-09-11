@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useI18n } from '@/lib/i18n';
 
 interface FeatureDistribution {
   type: 'categorical' | 'numerical';
@@ -29,23 +30,25 @@ interface ExploreData {
 }
 
 export default function ExplorePage() {
+  const { t, lang } = useI18n();
   const [data, setData] = useState<ExploreData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/data/explore')
+    // Explicit lang keeps the engine output in sync with navigator.language detection
+    fetch(`/api/data/explore?lang=${lang}`)
       .then(res => res.json())
       .then(d => { setData(d); setLoading(false); })
       .catch(e => { setError(e.message); setLoading(false); });
-  }, []);
+  }, [lang]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">正在加载数据...</p>
+          <p className="text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -55,7 +58,7 @@ export default function ExplorePage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="glass-card p-8 text-center">
-          <p className="text-destructive">加载失败: {error}</p>
+          <p className="text-destructive">{t('common.loadFailed')}: {error}</p>
         </div>
       </div>
     );
@@ -73,40 +76,40 @@ export default function ExplorePage() {
 
   // Feature label mapping for distributions
   const featLabels: Record<string, string> = {
-    Pclass: '船舱等级', Sex: '性别', Age: '年龄', SibSp: '兄弟姐妹/配偶数',
-    Parch: '父母/子女数', Fare: '票价', Embarked: '登船港口',
-    CabinDeck: '甲板层', Title: '头衔',
+    Pclass: t('explore.featPclass'), Sex: t('explore.featSex'), Age: t('explore.featAge'), SibSp: t('explore.featSibSp'),
+    Parch: t('explore.featParch'), Fare: t('explore.featFare'), Embarked: t('explore.featEmbarked'),
+    CabinDeck: t('explore.featCabinDeck'), Title: t('explore.featTitle'),
   };
 
   return (
     <div className="space-y-8 p-5">
       {/* Page Title */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">数据探索</h1>
-        <p className="text-muted-foreground mt-2">了解泰坦尼克号数据集的全貌，发现影响生还的关键因素</p>
+        <h1 className="text-3xl font-bold text-foreground">{t('explore.title')}</h1>
+        <p className="text-muted-foreground mt-2">{t('explore.subtitle')}</p>
       </div>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass-card p-5">
-          <p className="text-sm text-muted-foreground mb-1">总乘客数</p>
+          <p className="text-sm text-muted-foreground mb-1">{t('explore.totalPassengers')}</p>
           <p className="text-3xl font-bold text-foreground">{total}</p>
-          <p className="text-xs text-muted-foreground mt-1">条乘客记录</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('explore.passengerRecords')}</p>
         </div>
         <div className="glass-card p-5 border-l-2 border-l-primary">
-          <p className="text-sm text-muted-foreground mb-1">生还率</p>
+          <p className="text-sm text-muted-foreground mb-1">{t('explore.survivalRate')}</p>
           <p className="text-3xl font-bold text-primary">{survivalRate.toFixed(1)}%</p>
-          <p className="text-xs text-muted-foreground mt-1">{survived}人生还 / {died}人遇难</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('explore.survivedOfDied', { survived, died })}</p>
         </div>
         <div className="glass-card p-5">
-          <p className="text-sm text-muted-foreground mb-1">平均年龄</p>
+          <p className="text-sm text-muted-foreground mb-1">{t('explore.averageAge')}</p>
           <p className="text-3xl font-bold text-foreground">
             {data.ageHistogram.survived.reduce((a, b) => a + b, 0) > 0 ? '29.7' : 'N/A'}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">岁</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('explore.yearsOld')}</p>
         </div>
         <div className="glass-card p-5">
-          <p className="text-sm text-muted-foreground mb-1">缺失值</p>
+          <p className="text-sm text-muted-foreground mb-1">{t('explore.missingValues')}</p>
           <div className="space-y-1">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Age</span>
@@ -128,8 +131,8 @@ export default function ExplorePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {/* Survival Rate Donut */}
         <div className="glass-card p-5">
-          <h3 className="text-lg font-semibold text-foreground mb-1">生还比例</h3>
-          <p className="text-xs text-muted-foreground mb-4">整体生还与遇难比例</p>
+          <h3 className="text-lg font-semibold text-foreground mb-1">{t('explore.donutTitle')}</h3>
+          <p className="text-xs text-muted-foreground mb-4">{t('explore.donutDesc')}</p>
           <div className="flex items-center justify-center">
             <svg viewBox="0 0 200 200" className="w-48 h-48">
               <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="20"
@@ -142,27 +145,27 @@ export default function ExplorePage() {
               <text x="100" y="95" textAnchor="middle" className="fill-foreground"
                 style={{ fontSize: '28px', fontWeight: 'bold' }}>{survivalRate.toFixed(1)}%</text>
               <text x="100" y="118" textAnchor="middle" className="fill-muted-foreground"
-                style={{ fontSize: '12px' }}>生还率</text>
+                style={{ fontSize: '12px' }}>{t('explore.survivalRate')}</text>
             </svg>
           </div>
           <div className="flex justify-center gap-6 mt-2 text-sm">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-primary" />生还</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-muted/30" />遇难</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-primary" />{t('explore.survived')}</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-muted/30" />{t('explore.died')}</span>
           </div>
           <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-            约38%的乘客生还。这个比例意味着如果随机猜测，准确率只有约62%。
+            {t('explore.donutNote')}
           </p>
         </div>
 
         {/* Sex vs Survival */}
         <div className="glass-card p-5">
-          <h3 className="text-lg font-semibold text-foreground mb-1">性别 vs 生还</h3>
-          <p className="text-xs text-muted-foreground mb-4">不同性别的生还率对比</p>
+          <h3 className="text-lg font-semibold text-foreground mb-1">{t('explore.sexTitle')}</h3>
+          <p className="text-xs text-muted-foreground mb-4">{t('explore.sexDesc')}</p>
           <div className="space-y-4">
             {Object.entries(sexSurvival).map(([key, info]) => (
               <div key={key}>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-foreground">{key === 'female' ? '女性' : '男性'}</span>
+                  <span className="text-foreground">{key === 'female' ? t('explore.female') : t('explore.male')}</span>
                   <span className="text-primary font-medium">{info.rate.toFixed(0)}%</span>
                 </div>
                 <div className="h-8 bg-muted/30 rounded-lg overflow-hidden">
@@ -175,19 +178,19 @@ export default function ExplorePage() {
             ))}
           </div>
           <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-            女性生还率远高于男性，这与&ldquo;妇女儿童优先&rdquo;的救生原则一致。性别是最重要的预测特征之一。
+            {t('explore.sexNote')}
           </p>
         </div>
 
         {/* Pclass vs Survival */}
         <div className="glass-card p-5">
-          <h3 className="text-lg font-semibold text-foreground mb-1">船舱等级 vs 生还</h3>
-          <p className="text-xs text-muted-foreground mb-4">不同船舱等级的生还率对比</p>
+          <h3 className="text-lg font-semibold text-foreground mb-1">{t('explore.pclassTitle')}</h3>
+          <p className="text-xs text-muted-foreground mb-4">{t('explore.pclassDesc')}</p>
           <div className="space-y-4">
             {Object.entries(pclassSurvival).sort().map(([key, info]) => (
               <div key={key}>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-foreground">{key}等舱</span>
+                  <span className="text-foreground">{t('explore.pclassLabel', { n: key })}</span>
                   <span className="text-success font-medium">{info.rate.toFixed(0)}%</span>
                 </div>
                 <div className="h-8 bg-muted/30 rounded-lg overflow-hidden">
@@ -200,14 +203,14 @@ export default function ExplorePage() {
             ))}
           </div>
           <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-            一等舱生还率最高(63%)，三等舱最低(24%)。社会阶层对生存机会有显著影响。
+            {t('explore.pclassNote')}
           </p>
         </div>
 
         {/* Age Distribution */}
         <div className="glass-card p-5">
-          <h3 className="text-lg font-semibold text-foreground mb-1">年龄分布</h3>
-          <p className="text-xs text-muted-foreground mb-4">不同年龄段的生还与遇难分布</p>
+          <h3 className="text-lg font-semibold text-foreground mb-1">{t('explore.ageTitle')}</h3>
+          <p className="text-xs text-muted-foreground mb-4">{t('explore.ageDesc')}</p>
           <div className="space-y-1 max-h-64 overflow-y-auto">
             {ageLabels.slice(0, 10).map((label, i) => {
               const maxVal = Math.max(...data.ageHistogram.survived.slice(0, 10), ...data.ageHistogram.died.slice(0, 10), 1);
@@ -229,27 +232,27 @@ export default function ExplorePage() {
             })}
           </div>
           <div className="flex gap-4 mt-2 text-xs">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/60" />生还</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-destructive/50" />遇难</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/60" />{t('explore.survived')}</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-destructive/50" />{t('explore.died')}</span>
           </div>
           <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-            儿童(0-12岁)的生还率相对较高，老人(60+)生还率偏低。
+            {t('explore.ageNote')}
           </p>
         </div>
 
         {/* Fare Distribution */}
         <div className="glass-card p-5">
-          <h3 className="text-lg font-semibold text-foreground mb-1">票价分布</h3>
-          <p className="text-xs text-muted-foreground mb-4">生还与遇难乘客的票价中位数对比</p>
+          <h3 className="text-lg font-semibold text-foreground mb-1">{t('explore.fareTitle')}</h3>
+          <p className="text-xs text-muted-foreground mb-4">{t('explore.fareDesc')}</p>
           <div className="space-y-6 mt-6">
             {[
-              { label: '生还者', stats: fareStats.survived, color: 'bg-primary' },
-              { label: '遇难者', stats: fareStats.died, color: 'bg-destructive/60' },
+              { label: t('explore.survivors'), stats: fareStats.survived, color: 'bg-primary' },
+              { label: t('explore.nonSurvivors'), stats: fareStats.died, color: 'bg-destructive/60' },
             ].map(({ label, stats, color }) => {
               const maxFare = Math.max(fareStats.survived.q75, fareStats.died.q75, 1);
               return (
                 <div key={label}>
-                  <p className="text-sm text-foreground mb-2">{label}票价</p>
+                  <p className="text-sm text-foreground mb-2">{t('explore.fareOf', { label })}</p>
                   <div className="relative h-6 bg-muted/20 rounded">
                     <div className={`absolute h-full ${color} rounded opacity-60`}
                       style={{ left: `${(stats.q25 / maxFare) * 100}%`, width: `${((stats.q75 - stats.q25) / maxFare) * 100}%` }} />
@@ -258,7 +261,7 @@ export default function ExplorePage() {
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
                     <span>Q1: £{stats.q25.toFixed(0)}</span>
-                    <span>中位数: £{stats.median.toFixed(0)}</span>
+                    <span>{t('explore.median', { v: stats.median.toFixed(0) })}</span>
                     <span>Q3: £{stats.q75.toFixed(0)}</span>
                   </div>
                 </div>
@@ -266,14 +269,14 @@ export default function ExplorePage() {
             })}
           </div>
           <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-            生还者的票价中位数明显高于遇难者，高票价乘客的生还机会更大。
+            {t('explore.fareNote')}
           </p>
         </div>
 
         {/* Correlation Heatmap */}
         <div className="glass-card p-5">
-          <h3 className="text-lg font-semibold text-foreground mb-1">特征相关性</h3>
-          <p className="text-xs text-muted-foreground mb-4">各特征之间的相关程度</p>
+          <h3 className="text-lg font-semibold text-foreground mb-1">{t('explore.corrTitle')}</h3>
+          <p className="text-xs text-muted-foreground mb-4">{t('explore.corrDesc')}</p>
           <div className="overflow-x-auto">
             <div className="inline-block min-w-[280px]">
               <div className="flex">
@@ -305,8 +308,8 @@ export default function ExplorePage() {
             </div>
           </div>
           <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-primary/40" />正相关</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-destructive/40" />负相关</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-primary/40" />{t('explore.positiveCorr')}</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-destructive/40" />{t('explore.negativeCorr')}</span>
           </div>
         </div>
       </div>
@@ -314,8 +317,8 @@ export default function ExplorePage() {
       {/* Feature Frequency Distributions */}
       {data.featureDistributions && (
         <div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">特征频数分布</h2>
-          <p className="text-muted-foreground mb-6">每个特征在不同取值段的乘客数量，以及对应的生还情况</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t('explore.freqTitle')}</h2>
+          <p className="text-muted-foreground mb-6">{t('explore.freqDesc')}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Object.entries(data.featureDistributions).map(([feat, dist]) => {
               const isNumerical = dist.type === 'numerical';
@@ -335,7 +338,7 @@ export default function ExplorePage() {
                 <div key={feat} className="glass-card p-4">
                   <h4 className="text-sm font-semibold text-foreground mb-1">{featLabels[feat] || feat}</h4>
                   <p className="text-[10px] text-muted-foreground mb-3">
-                    {isNumerical ? '数值分箱分布' : '类别频数分布'}
+                    {isNumerical ? t('explore.numericalBins') : t('explore.categoricalFreq')}
                   </p>
                   <div className="space-y-1.5">
                     {entries.map((entry, i) => {
@@ -347,7 +350,7 @@ export default function ExplorePage() {
                             <span className="text-muted-foreground truncate max-w-[60%]">{entry.label}</span>
                             <span className="text-foreground font-medium shrink-0">
                               {entry.count}
-                              <span className="text-muted-foreground ml-1">({survivalRate.toFixed(0)}%生还)</span>
+                              <span className="text-muted-foreground ml-1">({t('explore.pctSurvived', { pct: survivalRate.toFixed(0) })})</span>
                             </span>
                           </div>
                           <div className="flex h-4 bg-muted/20 rounded-sm overflow-hidden">
@@ -365,8 +368,8 @@ export default function ExplorePage() {
                     })}
                   </div>
                   <div className="flex gap-3 mt-2 text-[10px]">
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/70" />生还</span>
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-destructive/40" />遇难</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/70" />{t('explore.survived')}</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-destructive/40" />{t('explore.died')}</span>
                   </div>
                 </div>
               );
@@ -378,10 +381,10 @@ export default function ExplorePage() {
       {/* Next Step */}
       <div className="flex justify-between items-center">
         <Link href="/" className="px-6 py-3 rounded-xl text-sm font-medium border border-border text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all">
-          ← 返回首页
+          {t('common.backHome')}
         </Link>
         <Link href="/clean" className="btn-gradient px-6 py-3 rounded-xl text-sm font-medium">
-          下一步：数据清洗 →
+          {t('common.nextStep', { step: t('nav.stepClean') })}
         </Link>
       </div>
     </div>

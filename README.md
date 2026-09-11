@@ -25,7 +25,7 @@
 
 ### Phase 1: 原型设计
 - 设计 6 个页面的 HTML 原型（暗色科技 + 毛玻璃风格）
-- 原型文件：`.cozeproj/prototype/web/`
+- 原型文件：HTML 原型（已随 COZE 平台遗留物清理删除，见 git 历史）
 
 ### Phase 2: 后端 ML 引擎
 - 实现 `scripts/ml_engine.py`：支持 info/explore/clean/train/predict 五个命令

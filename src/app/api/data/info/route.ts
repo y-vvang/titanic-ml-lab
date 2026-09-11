@@ -10,6 +10,6 @@ export async function GET(request: Request) {
     return NextResponse.json(data);
   } catch (error) {
     console.error('Data info error:', error);
-    return NextResponse.json({ error: '获取数据信息失败' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to load data info' }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { useI18n } from '@/lib/i18n';
 
 export interface CleanConfig {
   missingValueStrategy: {
@@ -141,6 +142,7 @@ function saveActiveVersionId(id: number | null) {
 }
 
 export function MLProvider({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
   const [stepCompleted, setStepCompleted] = useState<Record<StepName, boolean>>({
     explore: false,
     clean: false,
@@ -184,7 +186,7 @@ export function MLProvider({ children }: { children: ReactNode }) {
       void _ts; void _lc;
       const newVersion: ModelVersion = {
         versionId: maxId + 1,
-        name: `模型 v${maxId + 1}`,
+        name: t('common.defaultVersionName', { n: maxId + 1 }),
         createdAt: new Date().toISOString(),
         trainConfig: config,
         trainResult: slimResult as TrainResult,
@@ -196,7 +198,7 @@ export function MLProvider({ children }: { children: ReactNode }) {
       return updated;
     });
     setStepCompleted(prev => ({ ...prev, train: true, evaluate: true }));
-  }, []);
+  }, [t]);
 
   const deleteVersion = useCallback((versionId: number) => {
     setVersions(prev => {
@@ -236,13 +238,13 @@ export function MLProvider({ children }: { children: ReactNode }) {
       const newVersion: ModelVersion = {
         ...data,
         versionId: maxId + 1,
-        name: data.name || `模型 v${maxId + 1}`,
+        name: data.name || t('common.defaultVersionName', { n: maxId + 1 }),
       };
       const updated = [...prev, newVersion];
       saveVersions(updated);
       return updated;
     });
-  }, []);
+  }, [t]);
 
   const getActiveVersion = useCallback((): ModelVersion | null => {
     if (activeVersionId === null) return null;

@@ -41,7 +41,7 @@
 ```
 
 ## 构建与测试命令
-- 开发：`coze dev`（端口5000，HMR）
+- 开发：`pnpm dev`（端口5000，HMR）
 - 构建：`pnpm run build`
 - 静态检查：`pnpm lint`、`pnpm ts-check`
 - Python 测试：`python3 scripts/ml_engine.py info '{}'`

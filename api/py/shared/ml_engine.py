@@ -39,6 +39,149 @@ def json_safe_dumps(obj, **kwargs):
     """json.dumps 的安全版本，自动处理 NaN/Infinity"""
     return json.dumps(_sanitize_nan(obj), **kwargs)
 
+
+# ── 双语文案（训练日志 / 探索页图表标签 / 错误消息）──
+# 前端在 config 顶层传 "lang": "zh" | "en"；缺省与未知值一律回退英文。
+# 值里除 {placeholder} 外不得出现字面 {}（.format 会解析它们）。
+STRINGS = {
+    "en": {
+        # train 日志
+        "log.loading_dataset": "Loading dataset...",
+        "log.dataset_loaded": "Dataset loaded: {rows} records, {cols} columns ({first_cols}...)",
+        "log.missing_col": "  Missing → {col}: {count} ({pct}%)",
+        "log.cleaning_start": "Starting data cleaning...",
+        "log.age_median": "  Age missing: {count} ({pct}%), filled with median",
+        "log.age_mean": "  Age missing: {count}, filled with mean",
+        "log.age_mode": "  Age missing: {count}, filled with mode",
+        "log.age_none": "  Age missing: {count}, left unfilled",
+        "log.emb_mode": "filled with mode 'S'",
+        "log.emb_drop": "rows dropped",
+        "log.emb_none": "left unfilled",
+        "log.emb_missing": "  Embarked missing: {count}, {desc}",
+        "log.cabin_drop": "drop the Cabin column",
+        "log.cabin_keep": "keep raw values",
+        "log.cabin_none": "not handled",
+        "log.cabin_extract": "extract deck level",
+        "log.cabin_missing": "  Cabin missing: {count} ({pct}%), strategy: {desc}",
+        "log.name_title": "  Name handling: extracted Title feature (Mr, Miss, Mrs, Master, Rare)",
+        "log.cleaning_done": "Data cleaning complete: {rows} records, missing values handled",
+        "log.selected_features": "Selected features: {features}",
+        "log.pre_encode_nan": "Features contain missing values before encoding: {cols} ({count} total)",
+        "log.encoding_start": "Feature encoding: one-hot encoding categorical features...",
+        "log.encoded": "One-hot encoding → expanded to {cols} feature columns (+{added})",
+        "log.post_encode_nan": "Features contain missing values after encoding: {cols} ({count} total)",
+        "log.split": "Train/test split: {train}/{test} ({train_pct}/{test_pct}), stratified",
+        "log.train_set": "  Train set: survived {survived} ({s_pct}%), died {died} ({d_pct}%)",
+        "log.test_set": "  Test set: survived {survived} ({s_pct}%), died {died} ({d_pct}%)",
+        "log.create_lr": "Creating logistic regression: C={C}, max_iter={max_iter}, solver={solver}, penalty={penalty}",
+        "log.training_start": "Training...",
+        "log.training_done": "Training done! Took {time}s",
+        "log.create_dt": "Creating decision tree: max_depth={max_depth}, min_samples_split={min_samples_split}, min_samples_leaf={min_samples_leaf}, criterion={criterion}",
+        "log.create_rf": "Creating random forest: n_estimators={n_estimators}, max_depth={max_depth}, min_samples_split={min_samples_split}",
+        "log.lc_start": "Computing learning curve (5-fold CV, 20 points)...",
+        "log.lc_done": "Learning curve complete ({n} points)",
+        "log.dt_structure": "Decision tree: depth {depth}, {nodes} nodes, {leaves} leaves",
+        "log.lr_weights": "Logistic regression: feature weights parsed",
+        "log.rf_structure": "Random forest: {n} trees, OOB curve generated",
+        "log.evaluating": "Evaluating model performance...",
+        "log.metrics": "Accuracy: {acc} | Precision: {prec} | Recall: {rec} | F1: {f1}",
+        "log.all_done": "Training pipeline complete! Total time {time}s",
+        "log.eval_done": "Evaluation complete!",
+        # 错误消息
+        "error.lr_missing_values": "Logistic regression does not support missing values; fill all missing values first, or choose a decision tree / random forest model",
+        "error.lr_missing_values_result": "Logistic regression does not support missing values. Please fill all missing values first, or choose a decision tree / random forest model.",
+        # explore 页图表数据标签
+        "explore.pclass.1": "1st class",
+        "explore.pclass.2": "2nd class",
+        "explore.pclass.3": "3rd class",
+        "explore.sex.male": "Male",
+        "explore.sex.female": "Female",
+        "explore.embarked.S": "Southampton",
+        "explore.embarked.C": "Cherbourg",
+        "explore.embarked.Q": "Queenstown",
+        "explore.survived.0": "Died",
+        "explore.survived.1": "Survived",
+        "explore.deck": "Deck {d}",
+        "explore.title.Mr": "Mr",
+        "explore.title.Miss": "Miss",
+        "explore.title.Mrs": "Mrs",
+        "explore.title.Master": "Master",
+        "explore.title.Rare": "Rare",
+    },
+    "zh": {
+        # train 日志
+        "log.loading_dataset": "正在加载数据集...",
+        "log.dataset_loaded": "数据集加载完成: {rows}条记录, {cols}个字段 ({first_cols}...)",
+        "log.missing_col": "  缺失值 → {col}: {count}个 ({pct}%)",
+        "log.cleaning_start": "开始数据清洗...",
+        "log.age_median": "  Age缺失值: {count}个 ({pct}%), 使用中位数填充",
+        "log.age_mean": "  Age缺失值: {count}个, 使用均值填充",
+        "log.age_mode": "  Age缺失值: {count}个, 使用众数填充",
+        "log.age_none": "  Age缺失值: {count}个, 未填充",
+        "log.emb_mode": "使用众数 'S' 填充",
+        "log.emb_drop": "删除对应行",
+        "log.emb_none": "未填充",
+        "log.emb_missing": "  Embarked缺失值: {count}个, {desc}",
+        "log.cabin_drop": "删除Cabin列",
+        "log.cabin_keep": "保留原始值",
+        "log.cabin_none": "未处理",
+        "log.cabin_extract": "提取甲板层",
+        "log.cabin_missing": "  Cabin缺失值: {count}个 ({pct}%), 策略: {desc}",
+        "log.name_title": "  姓名处理: 提取头衔特征 (Mr, Miss, Mrs, Master, Rare)",
+        "log.cleaning_done": "数据清洗完成: {rows}条记录, 缺失值已处理",
+        "log.selected_features": "选中特征: {features}",
+        "log.pre_encode_nan": "编码前特征中存在缺失值: {cols} (共 {count} 个)",
+        "log.encoding_start": "特征编码: 独热编码分类特征...",
+        "log.encoded": "独热编码 → 扩展为 {cols} 个特征列 (+{added} 列)",
+        "log.post_encode_nan": "编码后特征中存在缺失值: {cols} (共 {count} 个)",
+        "log.split": "训练/测试集划分: {train}/{test} ({train_pct}/{test_pct}), 分层抽样",
+        "log.train_set": "  训练集: 生还 {survived} ({s_pct}%), 遇难 {died} ({d_pct}%)",
+        "log.test_set": "  测试集: 生还 {survived} ({s_pct}%), 遇难 {died} ({d_pct}%)",
+        "log.create_lr": "创建逻辑回归模型: C={C}, max_iter={max_iter}, solver={solver}, penalty={penalty}",
+        "log.training_start": "开始训练...",
+        "log.training_done": "训练完成! 耗时 {time}s",
+        "log.create_dt": "创建决策树模型: max_depth={max_depth}, min_samples_split={min_samples_split}, min_samples_leaf={min_samples_leaf}, criterion={criterion}",
+        "log.create_rf": "创建随机森林模型: n_estimators={n_estimators}, max_depth={max_depth}, min_samples_split={min_samples_split}",
+        "log.lc_start": "计算学习曲线 (5-fold CV, 20个采样点)...",
+        "log.lc_done": "学习曲线计算完成 ({n}个采样点)",
+        "log.dt_structure": "决策树结构: 深度{depth}, {nodes}个节点, {leaves}个叶子节点",
+        "log.lr_weights": "逻辑回归: 特征权重已解析",
+        "log.rf_structure": "随机森林: {n}棵树, OOB曲线已生成",
+        "log.evaluating": "正在评估模型性能...",
+        "log.metrics": "准确率: {acc} | 精确率: {prec} | 召回率: {rec} | F1: {f1}",
+        "log.all_done": "训练流程全部完成! 总耗时 {time}s",
+        "log.eval_done": "评估完成!",
+        # 错误消息
+        "error.lr_missing_values": "逻辑回归不支持缺失值，请先填充所有缺失值，或选择决策树/随机森林模型",
+        "error.lr_missing_values_result": "逻辑回归不支持缺失值。请先填充所有缺失值，或选择决策树/随机森林模型。",
+        # explore 页图表数据标签
+        "explore.pclass.1": "1等舱",
+        "explore.pclass.2": "2等舱",
+        "explore.pclass.3": "3等舱",
+        "explore.sex.male": "男性",
+        "explore.sex.female": "女性",
+        "explore.embarked.S": "南安普顿",
+        "explore.embarked.C": "瑟堡",
+        "explore.embarked.Q": "皇后镇",
+        "explore.survived.0": "遇难",
+        "explore.survived.1": "生还",
+        "explore.deck": "{d}甲板",
+        "explore.title.Mr": "Mr先生",
+        "explore.title.Miss": "Miss小姐",
+        "explore.title.Mrs": "Mrs女士",
+        "explore.title.Master": "Master少爷",
+        "explore.title.Rare": "Rare稀有",
+    },
+}
+
+
+def _t(lang, key, **kwargs):
+    """按语言取文案；一切未知情况（未知 lang / 缺 key）回退英文，最后回退 key 本身"""
+    table = STRINGS.get(lang) if lang in ("zh", "en") else STRINGS["en"]
+    s = table.get(key) or STRINGS["en"].get(key) or key
+    return s.format(**kwargs) if kwargs else s
+
+
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
@@ -215,8 +358,8 @@ def get_data_info():
     }
 
 
-def get_explore_data():
-    """获取可视化所需的聚合数据"""
+def get_explore_data(lang="en"):
+    """获取可视化所需的聚合数据；lang 决定 featureDistributions 的显示标签"""
     df = load_data()
     total = len(df)
     
@@ -295,20 +438,20 @@ def get_explore_data():
         if feat not in df.columns:
             continue
         values = sorted(df[feat].dropna().unique(), key=lambda x: str(x))
-        # 映射显示名称
+        # 映射显示名称（按 lang 取双语标签，未覆盖的值回退原值）
         display_map = {}
         if feat == "Pclass":
-            display_map = {"1": "1等舱", "2": "2等舱", "3": "3等舱"}
+            display_map = {k: _t(lang, f"explore.pclass.{k}") for k in ("1", "2", "3")}
         elif feat == "Sex":
-            display_map = {"male": "男性", "female": "女性"}
+            display_map = {k: _t(lang, f"explore.sex.{k}") for k in ("male", "female")}
         elif feat == "Embarked":
-            display_map = {"S": "南安普顿", "C": "瑟堡", "Q": "皇后镇"}
+            display_map = {k: _t(lang, f"explore.embarked.{k}") for k in ("S", "C", "Q")}
         elif feat == "Survived":
-            display_map = {"0": "遇难", "1": "生还"}
+            display_map = {k: _t(lang, f"explore.survived.{k}") for k in ("0", "1")}
         elif feat == "CabinDeck":
-            display_map = {d: f"{d}甲板" for d in "ABCDEFGT"}
+            display_map = {d: _t(lang, "explore.deck", d=d) for d in "ABCDEFGT"}
         elif feat == "Title":
-            display_map = {"Mr": "Mr先生", "Miss": "Miss小姐", "Mrs": "Mrs女士", "Master": "Master少爷", "Rare": "Rare稀有"}
+            display_map = {k: _t(lang, f"explore.title.{k}") for k in ("Mr", "Miss", "Mrs", "Master", "Rare")}
         
         counts = {}
         survived_counts = {}
@@ -449,73 +592,82 @@ def run_train(config, emit):
 
     def lc_progress(current, total, data):
         emit({"type": "lc_progress", "current": current, "total": total, "data": data})
-    
+
+    lang = config.get("lang") or "en"
+
+    def T(key, **kwargs):
+        return _t(lang, key, **kwargs)
+
     try:
-        log("正在加载数据集...", "info")
+        log(T("log.loading_dataset"), "info")
         df = load_data()
         missing_info = {col: {"count": int(df[col].isnull().sum()), "pct": round(df[col].isnull().sum() / len(df) * 100, 1)} for col in df.columns if df[col].isnull().sum() > 0}
-        log(f"数据集加载完成: {len(df)}条记录, {len(df.columns)}个字段 ({', '.join(df.columns[:6])}...)", "success")
+        log(T("log.dataset_loaded", rows=len(df), cols=len(df.columns), first_cols=", ".join(df.columns[:6])), "success")
         if missing_info:
             for col, info in missing_info.items():
-                log(f"  缺失值 → {col}: {info['count']}个 ({info['pct']}%)", "detail")
+                log(T("log.missing_col", col=col, count=info['count'], pct=info['pct']), "detail")
         
         # 清洗数据
         clean_config = config.get("cleanConfig", {})
-        log("开始数据清洗...", "info")
+        log(T("log.cleaning_start"), "info")
         df = clean_data(df, clean_config)
-        
+
         # 详细清洗日志
         mvs = clean_config.get("missingValueStrategy", {})
         age_strategy = mvs.get("Age", clean_config.get("ageStrategy", "median"))
         age_missing = missing_info.get("Age", {})
         if age_missing:
             if age_strategy == "median":
-                log(f"  Age缺失值: {age_missing.get('count', 177)}个 ({age_missing.get('pct', 19.9)}%), 使用中位数填充", "detail")
+                log(T("log.age_median", count=age_missing.get('count', 177), pct=age_missing.get('pct', 19.9)), "detail")
             elif age_strategy == "mean":
-                log(f"  Age缺失值: {age_missing.get('count', 177)}个, 使用均值填充", "detail")
+                log(T("log.age_mean", count=age_missing.get('count', 177)), "detail")
             elif age_strategy == "mode":
-                log(f"  Age缺失值: {age_missing.get('count', 177)}个, 使用众数填充", "detail")
+                log(T("log.age_mode", count=age_missing.get('count', 177)), "detail")
             else:
-                log(f"  Age缺失值: {age_missing.get('count', 177)}个, 未填充", "detail")
-        
+                log(T("log.age_none", count=age_missing.get('count', 177)), "detail")
+
         embarked_strategy = mvs.get("Embarked", clean_config.get("embarkedStrategy", "mode"))
         emb_missing = missing_info.get("Embarked", {})
         if emb_missing:
-            strategy_desc = {"mode": "使用众数 'S' 填充", "drop": "删除对应行", "none": "未填充"}.get(embarked_strategy, embarked_strategy)
-            log(f"  Embarked缺失值: {emb_missing.get('count', 2)}个, {strategy_desc}", "detail")
-        
+            strategy_desc = {
+                "mode": T("log.emb_mode"),
+                "drop": T("log.emb_drop"),
+                "none": T("log.emb_none"),
+            }.get(embarked_strategy, embarked_strategy)
+            log(T("log.emb_missing", count=emb_missing.get('count', 2), desc=strategy_desc), "detail")
+
         cabin_raw = mvs.get("Cabin", clean_config.get("cabinStrategy", "drop"))
-        cabin_map = {"deck": "extract_deck", "drop": "删除Cabin列", "keep": "保留原始值", "none": "未处理", "extract_deck": "提取甲板层"}
+        cabin_map = {"deck": T("log.cabin_extract"), "drop": T("log.cabin_drop"), "keep": T("log.cabin_keep"), "none": T("log.cabin_none"), "extract_deck": T("log.cabin_extract")}
         cabin_strategy = clean_config.get("cabinStrategy", cabin_raw)
         cab_missing = missing_info.get("Cabin", {})
         if cab_missing:
             strategy_desc = cabin_map.get(cabin_strategy, cabin_strategy)
-            log(f"  Cabin缺失值: {cab_missing.get('count', 687)}个 ({cab_missing.get('pct', 77.1)}%), 策略: {strategy_desc}", "detail")
-        
+            log(T("log.cabin_missing", count=cab_missing.get('count', 687), pct=cab_missing.get('pct', 77.1), desc=strategy_desc), "detail")
+
         name_strategy = clean_config.get("nameStrategy", "drop")
         if name_strategy == "title":
-            log(f"  姓名处理: 提取头衔特征 (Mr, Miss, Mrs, Master, Rare)", "detail")
-        
-        log(f"数据清洗完成: {len(df)}条记录, 缺失值已处理", "success")
-        
+            log(T("log.name_title"), "detail")
+
+        log(T("log.cleaning_done", rows=len(df)), "success")
+
         # 获取选中的特征
         selected_features = clean_config.get("selectedFeatures", ["Pclass", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked"])
-        log(f"选中特征: {', '.join(selected_features)}", "info")
-        
+        log(T("log.selected_features", features=", ".join(selected_features)), "info")
+
         # 在编码前检测缺失值
         pre_encode_nan_cols = [f for f in selected_features if f in df.columns and df[f].isna().any()]
         pre_encode_nan_count = sum(int(df[f].isna().sum()) for f in pre_encode_nan_cols)
         has_pre_encode_nan = pre_encode_nan_count > 0
         if has_pre_encode_nan:
-            log(f"编码前特征中存在缺失值: {', '.join(pre_encode_nan_cols)} (共 {pre_encode_nan_count} 个)", "warning")
-        
+            log(T("log.pre_encode_nan", cols=", ".join(pre_encode_nan_cols), count=pre_encode_nan_count), "warning")
+
         # 特征编码
-        log("特征编码: 独热编码分类特征...", "info")
+        log(T("log.encoding_start"), "info")
         n_cols_before = len(df.columns)
         df_raw = df.copy()
         df, selected_features = encode_features(df, selected_features)
         n_new_cols = len(df.columns) - n_cols_before
-        log(f"独热编码 → 扩展为 {len(df.columns)} 个特征列 (+{n_new_cols} 列)", "detail")
+        log(T("log.encoded", cols=len(df.columns), added=n_new_cols), "detail")
         
         # 确保特征列存在
         available_features = [f for f in selected_features if f in df.columns]
@@ -529,13 +681,13 @@ def run_train(config, emit):
         has_nan = post_encode_nan_count > 0
         if post_encode_nan_count > 0:
             nan_cols = [col for col in X.columns if X[col].isna().any()]
-            log(f"编码后特征中存在缺失值: {', '.join(nan_cols)} (共 {post_encode_nan_count} 个)", "warning")
-        
+            log(T("log.post_encode_nan", cols=", ".join(nan_cols), count=post_encode_nan_count), "warning")
+
         # 逻辑回归不支持缺失值
         model_type = config.get("modelType", "logistic_regression")
         if model_type == "logistic_regression" and has_nan:
-            log("逻辑回归不支持缺失值，请先填充所有缺失值，或选择决策树/随机森林模型", "error")
-            result({"error": "逻辑回归不支持缺失值。请先填充所有缺失值，或选择决策树/随机森林模型。", "hasUnfilledMissing": True})
+            log(T("error.lr_missing_values"), "error")
+            result({"error": T("error.lr_missing_values_result"), "hasUnfilledMissing": True})
             return
         
         # 划分训练集和测试集
@@ -549,9 +701,9 @@ def run_train(config, emit):
         train_died = train_n - train_survived
         test_survived = int(y_test.sum())
         test_died = test_n - test_survived
-        log(f"训练/测试集划分: {train_n}/{test_n} ({1-test_size:.0%}/{test_size:.0%}), 分层抽样", "info")
-        log(f"  训练集: 生还 {train_survived} ({train_survived/train_n*100:.1f}%), 遇难 {train_died} ({train_died/train_n*100:.1f}%)", "detail")
-        log(f"  测试集: 生还 {test_survived} ({test_survived/test_n*100:.1f}%), 遇难 {test_died} ({test_died/test_n*100:.1f}%)", "detail")
+        log(T("log.split", train=train_n, test=test_n, train_pct=f"{1-test_size:.0%}", test_pct=f"{test_size:.0%}"), "info")
+        log(T("log.train_set", survived=train_survived, s_pct=f"{train_survived/train_n*100:.1f}", died=train_died, d_pct=f"{train_died/train_n*100:.1f}"), "detail")
+        log(T("log.test_set", survived=test_survived, s_pct=f"{test_survived/test_n*100:.1f}", died=test_died, d_pct=f"{test_died/test_n*100:.1f}"), "detail")
         
         # 标准化（仅对逻辑回归）
         hyperparams = config.get("hyperparams", {})
@@ -575,19 +727,19 @@ def run_train(config, emit):
                 penalty = "l2"
             if penalty == "none":
                 penalty = None
-            log(f"创建逻辑回归模型: C={C}, max_iter={max_iter}, solver={solver}, penalty={penalty}", "info")
+            log(T("log.create_lr", C=C, max_iter=max_iter, solver=solver, penalty=penalty), "info")
             lr_kwargs = {"C": C, "max_iter": max_iter, "solver": solver, "random_state": random_state}
             if penalty is not None:
                 lr_kwargs["penalty"] = penalty
             else:
                 lr_kwargs["penalty"] = None
             model = LogisticRegression(**lr_kwargs)
-            
-            log("开始训练...", "warning")
+
+            log(T("log.training_start"), "warning")
             _t_train = _time.time()
             model.fit(X_train_scaled, y_train)
             _train_time = _time.time() - _t_train
-            log(f"训练完成! 耗时 {_train_time:.2f}s", "success")
+            log(T("log.training_done", time=f"{_train_time:.2f}"), "success")
             y_pred = model.predict(X_test_scaled)
             y_prob = model.predict_proba(X_test_scaled)
             
@@ -598,7 +750,7 @@ def run_train(config, emit):
             criterion = hyperparams.get("criterion", "gini")
             if max_depth == 0 or max_depth is None:
                 max_depth = None
-            log(f"创建决策树模型: max_depth={max_depth}, min_samples_split={min_samples_split}, min_samples_leaf={min_samples_leaf}, criterion={criterion}", "info")
+            log(T("log.create_dt", max_depth=max_depth, min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf, criterion=criterion), "info")
             model = DecisionTreeClassifier(
                 max_depth=max_depth,
                 min_samples_split=min_samples_split,
@@ -606,12 +758,12 @@ def run_train(config, emit):
                 criterion=criterion,
                 random_state=random_state
             )
-            
-            log("开始训练...", "warning")
+
+            log(T("log.training_start"), "warning")
             _t_train = _time.time()
             model.fit(X_train, y_train)
             _train_time = _time.time() - _t_train
-            log(f"训练完成! 耗时 {_train_time:.2f}s", "success")
+            log(T("log.training_done", time=f"{_train_time:.2f}"), "success")
             y_pred = model.predict(X_test)
             y_prob = model.predict_proba(X_test)
             
@@ -621,24 +773,24 @@ def run_train(config, emit):
             min_samples_split = hyperparams.get("minSamplesSplit", 2)
             if max_depth == 0 or max_depth is None:
                 max_depth = None
-            log(f"创建随机森林模型: n_estimators={n_estimators}, max_depth={max_depth}, min_samples_split={min_samples_split}", "info")
+            log(T("log.create_rf", n_estimators=n_estimators, max_depth=max_depth, min_samples_split=min_samples_split), "info")
             model = RandomForestClassifier(
                 n_estimators=n_estimators,
                 max_depth=max_depth,
                 min_samples_split=min_samples_split,
                 random_state=random_state
             )
-            
-            log("开始训练...", "warning")
+
+            log(T("log.training_start"), "warning")
             _t_train = _time.time()
             model.fit(X_train, y_train)
             _train_time = _time.time() - _t_train
-            log(f"训练完成! 耗时 {_train_time:.2f}s", "success")
+            log(T("log.training_done", time=f"{_train_time:.2f}"), "success")
             y_pred = model.predict(X_test)
             y_prob = model.predict_proba(X_test)
         
         # 计算学习曲线 - 流式推送20个采样点
-        log("计算学习曲线 (5-fold CV, 20个采样点)...", "info")
+        log(T("log.lc_start"), "info")
         from sklearn.model_selection import learning_curve as sk_learning_curve
         X_for_lc = X_train_scaled if scaler else X_train
         
@@ -690,7 +842,7 @@ def run_train(config, emit):
             "valScoresStd": lc_val_stds,
         }
         emit({"type": "learning_curve", "data": learning_curve_data})
-        log(f"学习曲线计算完成 ({lc_n_points}个采样点)", "success")
+        log(T("log.lc_done", n=lc_n_points), "success")
         
         # 模型结构可视化数据
         model_structure = {}
@@ -747,13 +899,13 @@ def run_train(config, emit):
         
         # 模型结构日志
         if model_type == "decision_tree":
-            log(f"决策树结构: 深度{model_structure.get('maxDepth', '?')}, {model_structure.get('nNodes', '?')}个节点, {model_structure.get('nLeaves', '?')}个叶子节点", "detail")
+            log(T("log.dt_structure", depth=model_structure.get('maxDepth', '?'), nodes=model_structure.get('nNodes', '?'), leaves=model_structure.get('nLeaves', '?')), "detail")
         elif model_type == "logistic_regression":
-            log("逻辑回归: 特征权重已解析", "detail")
+            log(T("log.lr_weights"), "detail")
         elif model_type == "random_forest":
-            log(f"随机森林: {model_structure.get('nTrees', '?')}棵树, OOB曲线已生成", "detail")
-        
-        log("正在评估模型性能...", "info")
+            log(T("log.rf_structure", n=model_structure.get('nTrees', '?')), "detail")
+
+        log(T("log.evaluating"), "info")
         
         # 计算评估指标
         acc = round(float(accuracy_score(y_test, y_pred)), 4)
@@ -764,10 +916,10 @@ def run_train(config, emit):
         cm = confusion_matrix(y_test, y_pred)
         tn, fp, fn, tp = int(cm[0][0]), int(cm[0][1]), int(cm[1][0]), int(cm[1][1])
         
-        log(f"准确率: {acc:.2%} | 精确率: {prec:.2%} | 召回率: {rec:.2%} | F1: {f1:.2%}", "success")
-        
+        log(T("log.metrics", acc=f"{acc:.2%}", prec=f"{prec:.2%}", rec=f"{rec:.2%}", f1=f"{f1:.2%}"), "success")
+
         _total_time = _time.time() - _t0
-        log(f"训练流程全部完成! 总耗时 {_total_time:.2f}s", "success")
+        log(T("log.all_done", time=f"{_total_time:.2f}"), "success")
         
         # 特征重要性
         feature_importance = []
@@ -893,7 +1045,7 @@ def run_train(config, emit):
             if fare_acc:
                 group_accuracy["byFare"] = fare_acc
         
-        log("评估完成!")
+        log(T("log.eval_done"))
         
         # 保存模型和预处理信息到临时文件
         model_info = {
@@ -1125,10 +1277,11 @@ def run_train_collect(config):
 
 def run_command(command, config):
     """执行非 train 命令，返回结果 dict；未知命令返回 {error: ...}"""
+    lang = config.get("lang") or "en"
     if command == "info":
         return get_data_info()
     if command == "explore":
-        return get_explore_data()
+        return get_explore_data(lang)
     if command == "clean":
         return clean_data_only(config)
     if command == "preview":

@@ -6,10 +6,13 @@ export const maxDuration = 30;
 
 export async function GET(request: Request) {
   try {
-    const data = await runEngine('explore', {}, request);
+    // Optional explicit language override from the client (?lang=zh|en);
+    // runEngine falls back to the Accept-Language header when absent.
+    const lang = new URL(request.url).searchParams.get('lang') ?? undefined;
+    const data = await runEngine('explore', lang ? { lang } : {}, request);
     return NextResponse.json(data);
   } catch (error) {
     console.error('Explore data error:', error);
-    return NextResponse.json({ error: '获取探索数据失败' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to load explore data' }, { status: 500 });
   }
 }

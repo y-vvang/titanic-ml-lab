@@ -1,5 +1,5 @@
 import { spawn } from 'child_process';
-import { engineScriptPath, isVercel, pythonFunctionUrl, resolvePython } from '@/lib/ml-engine';
+import { detectLang, engineScriptPath, isVercel, pythonFunctionUrl, resolvePython } from '@/lib/ml-engine';
 
 // Vercel 上该路由代理 Python 训练函数，冷启动 + 训练 + 学习曲线计算需要更长时间
 export const maxDuration = 60;
@@ -10,12 +10,27 @@ const SSE_HEADERS = {
   Connection: 'keep-alive',
 };
 
+// 这两条错误消息会显示在前端本地化的日志面板里，按 lang 选择文案
+const SSE_ERRORS = {
+  zh: {
+    noOutput: '训练无输出，请检查函数日志',
+    exitCode: '进程退出码: {code}',
+  },
+  en: {
+    noOutput: 'Training produced no output; check the function logs',
+    exitCode: 'Process exit code: {code}',
+  },
+} as const;
+
 function sseChunk(event: unknown): Uint8Array {
   return new TextEncoder().encode(`data: ${JSON.stringify(event)}\n\n`);
 }
 
 export async function POST(request: Request) {
   const config = await request.json();
+  // 与其余 runEngine 路由一致：显式 lang > Accept-Language > en
+  config.lang = detectLang(request, config.lang);
+  const sseErr = SSE_ERRORS[config.lang === 'zh' ? 'zh' : 'en'];
 
   // Vercel 模式：Python 函数一次性返回全部事件，这里转成 SSE 流（前端契约不变）
   if (isVercel()) {
@@ -35,7 +50,7 @@ export async function POST(request: Request) {
           }
           if (events.length === 0) {
             controller.enqueue(
-              sseChunk({ type: 'error', message: '训练无输出，请检查函数日志' }),
+              sseChunk({ type: 'error', message: sseErr.noOutput }),
             );
           }
         } catch (err) {
@@ -80,7 +95,7 @@ export async function POST(request: Request) {
       proc.on('close', (code) => {
         if (code !== 0 && code !== null) {
           controller.enqueue(
-            sseChunk({ type: 'error', message: `进程退出码: ${code}` }),
+            sseChunk({ type: 'error', message: sseErr.exitCode.replace('{code}', String(code)) }),
           );
         }
         try {
