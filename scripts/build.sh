@@ -3,9 +3,6 @@ set -Eeuo pipefail
 
 cd "$(dirname "$0")/.."
 
-echo "Installing dependencies..."
-pnpm install --prefer-frozen-lockfile --prefer-offline --loglevel debug --reporter=append-only
-
 # Vercel 构建镜像的 Python 由 uv 管理（PEP 668 externally-managed），禁止 pip install；
 # api/py/** 函数的依赖由 Vercel Python builder 从 requirements.txt 安装，仅在本地装。
 if [ -z "${VERCEL:-}" ]; then
