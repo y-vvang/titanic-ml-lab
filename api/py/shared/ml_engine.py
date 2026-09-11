@@ -1291,29 +1291,6 @@ def run_command(command, config):
     return {"error": f"Unknown command: {command}"}
 
 
-# ── 兜底入口 ──
-# Vercel 可能把 api/ 下任意 .py 注册为函数入口；本文件是共享模块而非 API，
-# 定义 404 handler 仅用于避免 "no handler" 构建错误，正常不会被请求到。
-from http.server import BaseHTTPRequestHandler  # noqa: E402
-
-
-class _FallbackHandler(BaseHTTPRequestHandler):
-    def _not_found(self):
-        body = b'{"error": "not found"}'
-        self.send_response(404)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
-
-    def do_GET(self):
-        self._not_found()
-
-    def do_POST(self):
-        self._not_found()
-
-    def log_message(self, format, *args):  # noqa: A002
-        pass
-
-
-handler = _FallbackHandler
+# 注：本文件是共享模块而非 API 入口。Vercel 零配置对 api/**/*.py 做静态入口
+# 检测（只认顶层 class/def 形式的 handler/app），检测不过的文件会被直接跳过、
+# 不注册为函数——因此共享模块无需也不应有 "兜底 handler"。详见 endpoint.py。

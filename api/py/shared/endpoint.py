@@ -1,8 +1,23 @@
 """Vercel Python Functions 通用 handler 工厂
 
 api/py/<command>/index.py 通过本工厂生成处理对应 ML 引擎命令的 HTTP 入口：
+
     from endpoint import make_handler
-    handler = make_handler("train")
+
+    _base = make_handler("train")
+
+    class handler(_base):
+        pass
+
+⚠ 入口必须是顶层 `class handler` 类定义，不能写成 `handler = make_handler("train")`。
+Vercel 零配置构建时用静态分析（@vercel/python-analysis 的 findAppOrHandler）判定
+api/**/*.py 是否为函数入口，只认顶层 class/def 形式的 `handler` / `app` /
+`application`；运行时赋值形式会被静默跳过——不部署、不报错，线上表现为
+/api/py/<command> 404（2026-09-11 排查过：整条链路无报错，仅 /api/py/shared/endpoint
+因本文件的旧兜底 `class handler` 而被部署，其余 6 个命令入口全部未注册）。
+
+同理，本文件与 ml_engine.py 是共享模块而非 API：静态检测不通过的 .py 会被直接
+跳过、不注册为函数，因此共享模块不需要也不应该有 "兜底 handler"。
 
 请求/响应契约：
 - 入参：POST JSON body = 引擎命令的 config（GET 视为空 config）
@@ -63,25 +78,3 @@ def make_handler(command: str):
             pass
 
     return Handler
-
-
-# ── 兜底入口 ──
-# Vercel 可能把 api/ 下任意 .py 注册为函数入口；本文件是共享工具模块而非 API，
-# 定义 404 handler 仅用于避免 "no handler" 构建错误，正常不会被请求到。
-class handler(BaseHTTPRequestHandler):
-    def _not_found(self):
-        body = b'{"error": "not found"}'
-        self.send_response(404)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
-
-    def do_GET(self):
-        self._not_found()
-
-    def do_POST(self):
-        self._not_found()
-
-    def log_message(self, format, *args):  # noqa: A002
-        pass

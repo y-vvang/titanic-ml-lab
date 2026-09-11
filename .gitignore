@@ -99,3 +99,7 @@ Desktop.ini
 
 .coze-logs
 .cozeproj/reduction
+
+# Python bytecode
+__pycache__/
+*.pyc

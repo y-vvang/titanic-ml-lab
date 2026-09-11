@@ -19,7 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Vercel 构建镜像的 Python 由 uv 管理（PEP 668 externally-managed），任何脚本不得在 Vercel 上直接 pip install**——`scripts/build.sh` 以 `$VERCEL` 环境变量判断：Vercel 上跳过 pip（依赖由 Python builder 装），仅本地执行 `pip install -r requirements.txt`。
 - **Python 函数只打包 api/ 目录可达文件**——`public/dataset.csv` 在函数文件系统不可达，数据集在 `api/py/shared/data/dataset.csv` 有一份拷贝（`public/` 原文件保留给首页下载链接，**两份必须保持一致**）。
 - **共享模块**：ML 核心在 `api/py/shared/ml_engine.py`（单一事实来源），`scripts/ml_engine.py` 是薄 CLI 包装，`api/py/<cmd>/index.py` 通过 `api/py/shared/endpoint.py` 的 `make_handler()` 工厂生成入口。
-- **兜底 handler**：`ml_engine.py` 和 `endpoint.py` 末尾各有 404 `handler`——Vercel 可能把 api/ 下任意 .py 注册为函数入口，没有 handler 会构建失败；定义为 404 后两种情况都安全。
+- **Python 函数入口约定（踩坑 2026-09-11）**：Vercel 零配置构建用静态分析（`@vercel/python-analysis` 的 `findAppOrHandler`）判定 `api/**/*.py` 是否为函数入口，**只认顶层 `class handler` / `app` / `application` 类或函数定义**。`handler = make_handler(...)` 这类运行时赋值会被**静默跳过**——不部署、不报错，线上表现为 `/api/py/<cmd>` 404 落到 Next.js 的 404 页。因此 `api/py/<cmd>/index.py` 必须写成 `_base = make_handler("<cmd>")` + `class handler(_base): pass`；而 `endpoint.py` / `ml_engine.py` 等共享模块检测不过会被直接跳过、不注册为函数，**不需要也不能有**"兜底 handler"（有了反而会被部署成垃圾 404 端点）。新增命令入口时照抄现有 index.py 结构即可；可用 CLI 自带的 `@vercel/python-analysis` 的 `findAppOrHandler()` 本地预检。
 - Python 版本固定在 `.python-version`（3.12）；Python 函数 maxDuration 在 `vercel.json` 设为 60s（Hobby 上限 300s，sklearn 冷启动 + 学习曲线计算 60s 足够）；Next 路由内用 `export const maxDuration` 设置。
 - Vercel Python runtime 打包**无 tree-shaking**（全量打包）；若部署时报体积超限（Python 上限 500MB），在 vercel.json `functions` 里给 `api/py/**/*.py` 加 `excludeFiles` 裁剪。
 
